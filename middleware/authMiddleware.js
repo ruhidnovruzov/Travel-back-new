@@ -7,19 +7,27 @@ const User = require('../models/User');
 // İstifadəçini qorunan marşrutlara daxil olmadan əvvəl autentifikasiya edir
 const protect = asyncHandler(async (req, res, next) => {
     let token;
-
-    // 1. Cookie-dən yoxla
-    if (req.cookies.token) {
+    
+    console.log('Headers:', req.headers); // Debug üçün
+    console.log('Cookies:', req.cookies); // Debug üçün
+    
+    // 1. Authorization header-dən token al
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+            console.log('Token from header:', token);
+        } catch (error) {
+            console.error('Header token error:', error);
+        }
+    }
+    
+    // 2. Cookie-dən token al
+    if (!token && req.cookies.token) {
         token = req.cookies.token;
+        console.log('Token from cookie:', token);
     }
-    // 2. Header-dən yoxla (Bearer ...)
-    else if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer ')
-    ) {
-        token = req.headers.authorization.split(' ')[1];
-    }
-
+    
+    // Token yoxdursa
     if (!token) {
         console.log('No token found');
         res.status(401);
@@ -29,12 +37,18 @@ const protect = asyncHandler(async (req, res, next) => {
     try {
         // Tokeni yoxla
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Token decoded:', decoded);
+        
+        // İstifadəçini tap
         req.user = await User.findById(decoded.id).select('-password');
+        
         if (!req.user) {
             console.log('User not found for token');
             res.status(401);
             throw new Error('İcazə yoxdur, istifadəçi tapılmadı.');
         }
+        
+        console.log('User found:', req.user.email);
         next();
     } catch (error) {
         console.error('Token verification error:', error);
