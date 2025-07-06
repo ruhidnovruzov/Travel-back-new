@@ -18,7 +18,7 @@ const router = express.Router();
 router.post('/', protect, createBooking);
 
 // İstifadəçinin öz rezervasiyalarını al (Private)
-router.get('/my', protect, getMyBookings);
+router.get('/my', getMyBookings);
 
 // Admin üçün bütün rezervasiyaları al (Private/Admin)
 router.get('/', protect, authorize('admin'), getAllBookings);
