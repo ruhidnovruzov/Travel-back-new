@@ -19,20 +19,20 @@ const sendTokenResponse = (user, statusCode, res) => {
     const options = {
         expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 gün
         httpOnly: true, // JavaScript-dən çərəzə daxil olmağı qadağan edir (XSS hücumlarından qoruyur)
-        secure: process.env.NODE_ENV === 'production' ? true : false, // Yalnız HTTPS üzərindən göndər (production-da true olmalıdır)
-        sameSite: 'strict', // CSRF hücumlarından qoruma
+        secure: process.env.NODE_ENV === 'production', // HTTPS üzərindən göndər
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Cross-site requests üçün
     };
 
+    // Production-da əlavə ayarlar
     if (process.env.NODE_ENV === 'production') {
-        options.sameSite = 'none'; // Production-da "cross-site" tələblərə icazə vermək üçün
-        options.secure = true;
+        options.domain = process.env.COOKIE_DOMAIN || undefined; // Domain ayarı
     }
 
     res.status(statusCode)
         .cookie('token', token, options) // 'token' adlı çərəzi göndər
         .json({
             success: true,
-            token, // Tokeni responseda da göndərmək (debug və ya mobil üçün)
+            token, // Tokeni responseda da göndərmək (frontend üçün)
             user: {
                 _id: user._id,
                 name: user.name,
@@ -42,6 +42,7 @@ const sendTokenResponse = (user, statusCode, res) => {
             },
         });
 };
+
 
 // Nodemailer transporter-i konfiqurasiya et
 const transporter = nodemailer.createTransport({
@@ -188,19 +189,18 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/logout
 // @access  Private
 exports.logoutUser = asyncHandler(async (req, res, next) => {
-    res.cookie('token', 'none', {
-        expires: new Date(Date.now() + 10 * 1000), // Tokeni tez bitir (10 saniyə)
+    const cookieOptions = {
+        expires: new Date(Date.now() + 10 * 1000), // 10 saniyə
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' ? true : false,
-        sameSite: 'strict',
-    });
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    };
 
     if (process.env.NODE_ENV === 'production') {
-        // Bu hissə artıq sendTokenResponse funksiyasında idarə olunur, lakin logout üçün də saxlayaq
-        // res.options obyektinə birbaşa daxil olmaq düzgün deyil.
-        // options obyektini cookie metoduna ötürmək lazımdır.
-        // Yuxarıdakı cookie metodu artıq bunu edir.
+        cookieOptions.domain = process.env.COOKIE_DOMAIN || undefined;
     }
+
+    res.cookie('token', 'none', cookieOptions);
 
     res.status(200).json({
         success: true,
