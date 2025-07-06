@@ -27,7 +27,7 @@ connectDB();
 
 const app = express();
    app.use(cors({
-     origin: 'http://localhost:5173', // React frontend-inizin ünvanı
+     origin: 'https://gunay-aztravel.vercel.app', // React frontend-inizin ünvanı
      credentials: true
    }));
 // Middleware-ləri tətbiq et
