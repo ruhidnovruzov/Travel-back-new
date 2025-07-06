@@ -26,12 +26,11 @@ dotenv.config();
 connectDB();
 
 const app = express();
-    
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
       'https://gunay-aztravel.vercel.app',
-      'http://localhost:5173',
+      'http://localhost:3000',
       'https://localhost:3000'
     ];
     
@@ -50,10 +49,6 @@ app.use(cors({
   exposedHeaders: ['Set-Cookie'],
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
-
-// Preflight requests üçün
-app.options('*', cors());
-
 
 
 // Middleware-ləri tətbiq et
