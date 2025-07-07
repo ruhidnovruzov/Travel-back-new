@@ -30,7 +30,7 @@ app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
       'https://gunay-aztravel.vercel.app',
-      'http://localhost:3000',
+      'http://localhost:5173',
       'https://localhost:3000'
     ];
     
