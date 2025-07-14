@@ -87,6 +87,7 @@ exports.createUser = asyncHandler(async (req, res) => {
         email,
         password, // Şifrə User modelindəki pre-save hook tərəfindən hash ediləcək
         role: role || 'user', // Əgər rol verilməyibsə, defolt 'user' olacaq
+        isVerified: true, // Admin tərəfindən yaradılan istifadəçilər avtomatik təsdiqlənir
     });
 
     if (user) {
