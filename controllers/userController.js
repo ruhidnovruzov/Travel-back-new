@@ -62,7 +62,49 @@ exports.updateUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Yeni istifadəçi yarat (yalnız admin üçün)
+// @route   POST /api/users
+// @access  Private/Admin
+exports.createUser = asyncHandler(async (req, res) => {
+    const { name, email, password, role } = req.body;
 
+    // Məcburi sahələri yoxla
+    if (!name || !email || !password) {
+        res.status(400);
+        throw new Error('Ad, email və şifrə daxil etmək məcburidir.');
+    }
+
+    // Email-in artıq mövcud olub-olmadığını yoxla
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+        res.status(400);
+        throw new Error('Bu email ilə istifadəçi artıq mövcuddur.');
+    }
+
+    // Yeni istifadəçi yarat
+    const user = await User.create({
+        name,
+        email,
+        password, // Şifrə User modelindəki pre-save hook tərəfindən hash ediləcək
+        role: role || 'user', // Əgər rol verilməyibsə, defolt 'user' olacaq
+    });
+
+    if (user) {
+        res.status(201).json({
+            success: true,
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+            message: 'İstifadəçi uğurla yaradıldi.'
+        });
+    } else {
+        res.status(400);
+        throw new Error('İstifadəçi yaradılmadı.');
+    }
+});
 
 // @desc    Bütün istifadəçiləri al (yalnız admin üçün)
 // @route   GET /api/users
@@ -75,8 +117,6 @@ exports.getUsers = asyncHandler(async (req, res) => {
         data: users,
     });
 });
-
-
 
 // @desc    İstifadəçini ID-yə görə al (yalnız admin üçün)
 // @route   GET /api/users/:id
