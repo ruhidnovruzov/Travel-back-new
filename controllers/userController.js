@@ -194,7 +194,7 @@ exports.sendResetPasswordEmail = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // Linki hazırla və göndər
-    const resetUrl = `https://gunay-aztravel.vercel.app/${resetToken}`;
+    const resetUrl = `https://gunay-aztravel.vercel.app/reset-password/${resetToken}`;
     await sendEmail({
         to: user.email,
         subject: 'Şifrəni sıfırla',
