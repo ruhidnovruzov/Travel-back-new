@@ -10,6 +10,7 @@ const {
     updateUserRole,
     sendResetPasswordEmail,
     resetPasswordWithToken,
+    createUser, // Yeni əlavə edilən funksiya
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
@@ -22,7 +23,8 @@ router.route('/profile')
 
 // Admin üçün istifadəçi idarəetmə marşrutları (Private/Admin)
 router.route('/')
-    .get(protect, authorize('admin'), getUsers); // Bütün istifadəçiləri al
+    .get(protect, authorize('admin'), getUsers) // Bütün istifadəçiləri al
+    .post(protect, authorize('admin'), createUser); // Yeni istifadəçi yarat
 
 router.route('/:id')
     .get(protect, authorize('admin'), getUserById) // İstifadəçini ID-yə görə al
